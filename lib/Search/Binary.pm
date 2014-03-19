@@ -1,17 +1,75 @@
-#
-# $Id: Binary.pm,v 1.5 1998/12/15 20:55:08 rantapaa Exp $
-#
-# Seach::Binary
-
 package Search::Binary;
+
+use strict;
+use warnings;
+use Carp;
+use parent 'Exporter';
+our @EXPORT = qw(binary_search);
+
+our $VERSION = '0.96_01';
+
+sub binary_search {
+    my ($posmin, $posmax, $target, $readfn, $handle, $smallblock) = @_;
+    $smallblock ||= 0;
+    if ($posmin > $posmax) {
+        carp 'First argument must be less then or equal to second argument'
+            . " (min: $posmin, max: $posmax)";
+        return 0; # some libraries rely on this behavior
+    }
+
+    my ($x, $compare, $mid);
+
+    # assert $posmin <= $posmax
+
+    my $seeks = my $reads = 0;
+    my $lastmid = int($posmin + (($posmax - $posmin) / 2)) - 1;
+    while ($posmax - $posmin > $smallblock) {
+
+        # assert: $posmin is the beginning of a record
+        # and $target >= index value for that record
+
+        $seeks++;
+        $x = int($posmin + (($posmax - $posmin) / 2));
+        ($compare, $mid) = $readfn->($handle, $target, $x);
+
+        unless (defined($compare)) {
+            $posmax = $mid;
+            next;
+        }
+        last if ($mid == $lastmid);
+        if ($compare > 0) {
+            $posmin = $mid;
+        } else {
+            $posmax = $mid;
+        }
+        $lastmid = $mid;
+    }
+
+    # Switch to sequential search.
+
+    $x = $posmin;
+    while ($posmin <= $posmax) {
+
+        # same loop invarient as above applies here
+
+        $reads++;
+        ($compare, $posmin) = $readfn->($handle, $target, $x);
+        last unless (defined($compare) && $compare > 0);
+        $x = undef;
+    }
+    return wantarray ? ($posmin, $seeks, $reads) : $posmin;
+}
+
+1;
+__END__
 
 =head1 NAME
 
-Search::Binary -- generic binary search
+Search::Binary - generic binary search
 
 =head1 SYNOPSIS
 
-  use Seach::Binary;
+  use Search::Binary;
   $pos = binary_search($min, $max, $val, $read, $handle, [$size]);
 
 =head1 DESCRIPTION
@@ -53,64 +111,3 @@ This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
 =cut
-
-# use strict;
-require Exporter;
-@ISA = qw(Exporter);
-@EXPORT = qw(binary_search);
-
-$VERSION = "0.95";
-
-sub binary_search {
-	my $posmin = shift;
-	my $posmax = shift;
-	my $target = shift;
-	my $readfn = shift;
-	my $handle = shift;
-	my $smallblock = shift || 512;
-
-	my ($x, $compare, $mid, $lastmid);
-	my ($seeks, $reads);
-
-	# assert $posmin <= $posmax
-
-	$seeks = $reads = 0;
-	$lastmid = int(($posmin + $posmax)/2)-1;
-	while ($posmax - $posmin > $smallblock) {
-
-		# assert: $posmin is the beginning of a record
-		# and $target >= index value for that record 
-
-		$seeks++;
-		$x = int(($posmin + $posmax)/2);
-		($compare, $mid) = &$readfn($handle, $target, $x);
-
-		unless (defined($compare)) {
-			$posmax = $mid;
-                        next;
-                }
-                last if ($mid == $lastmid);
-                if ($compare > 0) {
-                        $posmin = $mid;
-                } else {
-                        $posmax = $mid;
-                }
-                $lastmid = $mid;
-	}
-
-	# Switch to sequential search.
-
-	$x = $posmin;
-	while ($posmin <= $posmax) {
-
-		# same loop invarient as above applies here
-
-		$reads++;
-		($compare, $posmin) = &$readfn($handle, $target, $x);
-		last unless (defined($compare) && $compare > 0);
-		$x = undef;
-	}
-	wantarray ? ($posmin, $seeks, $reads) : $posmin;
-}
-
-1;
