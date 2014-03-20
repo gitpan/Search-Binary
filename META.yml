@@ -5,6 +5,7 @@ author:
 build_requires:
   ExtUtils::MakeMaker: '0'
   Test::More: '0.96'
+  Test::Warnings: '0.012'
 configure_requires:
   ExtUtils::MakeMaker: '0'
 dynamic_config: 1
@@ -21,10 +22,12 @@ no_index:
 requires:
   Carp: '0'
   Exporter: '0'
+  lib: '0'
+  parent: '0'
   perl: '5.006000'
   strict: '0'
   warnings: '0'
 resources:
   bugtracker: https://rt.cpan.org/Dist/Display.html?Name=Search-Binary
   repository: git://github.com/Xaerxess/Search-Binary.git
-version: 0.96_01
+version: 0.96_02
