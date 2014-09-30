@@ -1,3 +1,8 @@
+0.99 2014-09-30 XAERXESS
+
+ - Added LICENSE file to MANIFEST (it was missing in 0.98 tarball)
+ - Cleaned up README
+
 0.98 2014-09-30 XAERXESS
 
  - Removed undocumented behavior when binary_search was invoked in list

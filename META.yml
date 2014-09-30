@@ -30,4 +30,4 @@ requires:
 resources:
   bugtracker: https://rt.cpan.org/Dist/Display.html?Name=Search-Binary
   repository: git://github.com/Xaerxess/Search-Binary.git
-version: '0.98'
+version: '0.99'
