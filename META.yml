@@ -1,5 +1,5 @@
 ---
-abstract: 'generic binary search'
+abstract: 'generic binary search (DEPRECATED)'
 author:
   - 'Erik Rantapaa <rantapaa@uswest.net>'
 build_requires:
@@ -30,4 +30,4 @@ requires:
 resources:
   bugtracker: https://rt.cpan.org/Dist/Display.html?Name=Search-Binary
   repository: git://github.com/Xaerxess/Search-Binary.git
-version: 0.96_02
+version: '0.97'
