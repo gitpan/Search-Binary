@@ -6,7 +6,7 @@ use Carp;
 use parent 'Exporter';
 our @EXPORT = qw(binary_search);
 
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 sub binary_search {
     my ($posmin, $posmax, $target, $readfn, $handle, $smallblock) = @_;
@@ -21,14 +21,12 @@ sub binary_search {
 
     # assert $posmin <= $posmax
 
-    my $seeks = my $reads = 0;
     my $lastmid = int($posmin + (($posmax - $posmin) / 2)) - 1;
     while ($posmax - $posmin > $smallblock) {
 
         # assert: $posmin is the beginning of a record
         # and $target >= index value for that record
 
-        $seeks++;
         $x = int($posmin + (($posmax - $posmin) / 2));
         ($compare, $mid) = $readfn->($handle, $target, $x);
 
@@ -52,12 +50,11 @@ sub binary_search {
 
         # same loop invarient as above applies here
 
-        $reads++;
         ($compare, $posmin) = $readfn->($handle, $target, $x);
         last unless (defined($compare) && $compare > 0);
         $x = undef;
     }
-    return wantarray ? ($posmin, $seeks, $reads) : $posmin;
+    return $posmin;
 }
 
 1;
@@ -76,7 +73,7 @@ Search::Binary - generic binary search (DEPRECATED)
 
 Instead of using C<Search:Binary>, for most cases L<List::BinarySearch> offers
 same functionality with simpler, more robust API and thus the latter should be
-preferred and this module should be considered deprecated.
+preferred and B<this module should be considered deprecated>.
 
 C<binary_search> subroutine (which is exported by default) implements a generic
 binary search algorithm returning the I<position> of the first I<record> which
@@ -133,14 +130,23 @@ Using L<List::BinarySearch>, equivaluent of above code would be:
 
   binsearch_pos { $a <=> $b } $value, @array;
 
-so unless one wants to use more generic algorithm (e.g. for some objects
-instead of arrays), L<List::BinarySearch> functions should be preferred.
+so unless one wants to use more generic algorithm, L<List::BinarySearch>
+functions should be preferred. There's also L<List::BinarySearch::XS> which
+is faster alternative to pure Perl solutions, if C compiler is available.
+
+=head1 WARNINGS
+
+Prior to version 0.98, C<binary_search> returned array of three elements in
+list context, but it was undocumented and in newer versions this behavior was
+removed.
 
 =head1 SEE ALSO
 
 =over 4
 
 =item * L<List::BinarySearch>
+
+=item * L<List::BinarySearch::XS>
 
 =back
 
